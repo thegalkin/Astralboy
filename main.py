@@ -56,7 +56,8 @@ def run():
                     s_pressed = False
                 if event.key == pygame.K_d:
                     d_pressed = False
-
+            if event.type == pygame.MOUSEMOTION:
+                
         if w_pressed:
             if y_ship < -70:
                 y_ship = 525
@@ -104,7 +105,7 @@ class Missile:
         shots_list.append(self)
 
     def move(self):
-        if self.x < 800:
+        if 0 < self.x < display_width or 0 < self.y < display_height:
             display.blit(missile, (self.x, self.y))
             self.x += 10
         else:
