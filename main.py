@@ -1,6 +1,7 @@
 import pygame
 from math import atan2, pi, sin, cos, radians
 from random import randint
+from time import time
 pygame.init()
 
 display_width = 800
@@ -40,6 +41,8 @@ asteroids_objects = []
 asteroids_spawn_areaSize = 100.0
 asteroids_speed = 1
 asteroids_amount = 10
+asteroids_time = 5
+
 
 
 def run():
@@ -52,10 +55,14 @@ def run():
     mouse_move = False
     ang = -90
     crosshairs = CrossHairs(0,0)
-    for i in range(asteroids_amount):
-            Asteroid(randint(display_width, display_width+asteroids_spawn_areaSize), randint(-asteroids_spawn_areaSize, display_height+asteroids_spawn_areaSize))
+    asteroids_previous = 0
+    
     while game:
         global engine_on
+        if time() - asteroids_previous >= asteroids_time:
+            asteroids_previous = time()
+            for i in range(randint(1,10)):
+                Asteroid(randint(display_width, display_width+asteroids_spawn_areaSize), randint(-asteroids_spawn_areaSize, display_height+asteroids_spawn_areaSize))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
