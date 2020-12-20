@@ -121,7 +121,8 @@ def run():
             x_ship -= ship_acceleration
         
         for asteroidI in asteroids_list:
-            asteroidI.move()    
+            asteroidI.move()
+            asteroidI.rollnrock()    
         pygame.display.update()
         clock.tick(60)
 
@@ -152,6 +153,9 @@ class Asteroid:
             asteroids_list.append(self)
             self.angle = randint(0, 90)
             self.scale = randint(10, 150)
+            self.speed = randint(1,5)
+            self.rollSpeed = randint(10,20)
+            self.rollDirection = randint(0,1)
 
     def move(self):
         if -asteroids_spawn_areaSize < self.x: # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize < self.y < display_height+asteroids_spawn_areaSize:
@@ -159,7 +163,13 @@ class Asteroid:
             self.x -= asteroids_speed
         else:
             asteroids_list.remove(self)
-
+    def rollnrock(self):
+        if self.rollDirection == 1:
+            self.angle = self.angle+self.rollSpeed
+            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
+        else:
+            self.angle = self.angle-self.rollSpeed
+            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
 
 class Missile:
     def __init__(self, x, y, angle):
