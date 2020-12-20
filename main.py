@@ -168,12 +168,11 @@ class Missile:
             self.y -= int((shot_speed * sin(radians(self.angle))))
         else:
             shots_list.remove(self)
-        for asteroid in asteroids_list:
-            asteroid.x + asteroid.scale
-            
-            if asteroid.x - asteroid.scale < self.x < asteroid.x + asteroid.scale and asteroid.y - asteroid.scale < self.y < asteroid.y + asteroid.scale:
-                asteroids_list.remove(asteroid)
+        for i in range(len(asteroids_list)):           
+            if asteroids_list[i].x - asteroids_list[i].scale < self.x < asteroids_list[i].x + asteroids_list[i].scale and asteroids_list[i].y - asteroids_list[i].scale < self.y < asteroids_list[i].y + asteroids_list[i].scale:
+                del asteroids_list[i]
                 shots_list.remove(self)
+                break
 
 
 run()
