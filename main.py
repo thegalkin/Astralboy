@@ -54,6 +54,7 @@ def run():
     d_pressed = False
     mouse_move = False
     ang = -90
+    angle = -90
     crosshairs = CrossHairs(0,0)
     asteroids_previous = 0
     
@@ -194,6 +195,8 @@ class Missile:
         self.life -= 10
         if self.life <= 0:
             shots_list.remove(self)
+
+
 
 
 run()
