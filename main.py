@@ -177,6 +177,7 @@ class Missile:
         self.y = y
         shots_list.append(self)
         self.angle = angle + 90
+        self.life = 500
 
     def move(self):
         if 0 < self.x < display_width or 0 < self.y < display_height:
@@ -190,6 +191,9 @@ class Missile:
                 del asteroids_list[i]
                 shots_list.remove(self)
                 break
+        self.life -= 10
+        if self.life <= 0:
+            shots_list.remove(self)
 
 
 run()
