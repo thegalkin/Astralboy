@@ -15,7 +15,10 @@ shipOn = pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (7
 shipOff = pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90))
 missile = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/missile.png"), (20, 40)), -90)
 asteroidImage = pygame.image.load("static/asteroid.png")
+background = pygame.image.load("static/background.png").convert()
+
 crosshairsImage = pygame.transform.scale(pygame.image.load("static/crosshairs.png"), (90,90))
+
 
 def bake_asteroid(angle, scaleSquare):
     return pygame.transform.rotate(pygame.transform.scale(asteroidImage, (scaleSquare, scaleSquare)), -angle)
@@ -26,6 +29,7 @@ y_ship = display_height/2
 ship_acceleration = 2
 x_shot = 0
 y_shot = 0
+x_bg = 0
 shot = False
 shot_speed = 10
 engine_on = False
@@ -39,7 +43,7 @@ asteroids_amount = 10
 
 
 def run():
-    global x_ship, y_ship, x_shot, y_shot, shot, shipOn
+    global x_ship, y_ship, x_shot, y_shot, shot, shipOn, x_bg
     game = True
 
     w_pressed = False
@@ -73,16 +77,13 @@ def run():
                 if event.key == pygame.K_d:
                     d_pressed = False
             if event.type == pygame.MOUSEMOTION:
-                
                 mouseX = pygame.mouse.get_pos()[0]
                 mouseY = pygame.mouse.get_pos()[1]
                 angle = ang = (180 / pi) * atan2(x_ship - mouseX, y_ship - mouseY)
                 crosshairs.move(mouseX, mouseY)
                 mouse_move = True
-                
 
         if w_pressed:
-            print("w")
             if y_ship < -70:
                 y_ship = 525
             else:
@@ -98,10 +99,13 @@ def run():
                 x_ship += 5
         else:
             engine_on = False
-        
-        
 
-        display.fill((255, 255, 255))
+        rel_x = x_bg % background.get_rect().width
+        display.blit(background, (rel_x - background.get_rect().width, 0))
+        if rel_x < display_width:
+            display.blit(background, (rel_x, 0))
+        x_bg -= 5
+
         moveShip(ang)
         for shot in shots_list:
             shot.move()
@@ -127,18 +131,20 @@ class CrossHairs:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
     def move(self, x, y):
         self.x = x
         self.y = y
         display.blit(crosshairsImage, (self.x, self.y))
+
 
 class Asteroid:
     def __init__(self, x, y):
             self.x = x
             self.y = y
             asteroids_list.append(self)
-            self.angle = randint(0,90)
-            self.scale = randint(10,150)
+            self.angle = randint(0, 90)
+            self.scale = randint(10, 150)
 
     def move(self):
         if -asteroids_spawn_areaSize < self.x: # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize < self.y < display_height+asteroids_spawn_areaSize:
@@ -153,7 +159,8 @@ class Missile:
         self.x = x
         self.y = y
         shots_list.append(self)
-        self.angle = angle
+        self.angle = angle + 90
+
     def move(self):
         if 0 < self.x < display_width or 0 < self.y < display_height:
             display.blit(pygame.transform.rotate(missile, self.angle), (self.x, self.y))
