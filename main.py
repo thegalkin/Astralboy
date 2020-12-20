@@ -176,7 +176,7 @@ class Missile:
         else:
             shots_list.remove(self)
         for i in range(len(asteroids_list)):           
-            if asteroids_list[i].x - asteroids_list[i].scale < self.x < asteroids_list[i].x + asteroids_list[i].scale and asteroids_list[i].y - asteroids_list[i].scale < self.y < asteroids_list[i].y + asteroids_list[i].scale:
+            if asteroids_list[i].x - asteroids_list[i].scale * 0.5 < self.x < asteroids_list[i].x + asteroids_list[i].scale * 0.5 and asteroids_list[i].y - asteroids_list[i].scale * 0.5 < self.y < asteroids_list[i].y + asteroids_list[i].scale * 0.5:
                 del asteroids_list[i]
                 shots_list.remove(self)
                 break
