@@ -1,7 +1,5 @@
-from math import pi, atan2
-
 import pygame
-
+from math import atan2, pi
 pygame.init()
 
 display_width = 800
@@ -12,8 +10,8 @@ pygame.display.set_caption("Astralboy")
 
 clock = pygame.time.Clock()
 
-shipOn = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (70, 90)), -90)
-shipOff = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90)), -90)
+shipOn = pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (70, 90))
+shipOff = pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90))
 missile = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/missile.png"), (20, 40)), -90)
 asteroid = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/asteroid.png"), (100, 100)), -90)
 
@@ -29,13 +27,12 @@ shots_list = []
 
 
 def run():
-    global x_ship, y_ship, x_shot, y_shot, shot
+    global x_ship, y_ship, x_shot, y_shot, shot, shipOn
     game = True
 
     w_pressed = False
     s_pressed = False
     d_pressed = False
-    ang = -90
 
     while game:
         global engine_on
@@ -60,15 +57,18 @@ def run():
                 if event.key == pygame.K_d:
                     d_pressed = False
             if event.type == pygame.MOUSEMOTION:
+                engine_on = True
                 mouseX = pygame.mouse.get_pos()[0]
                 mouseY = pygame.mouse.get_pos()[1]
-                angle = (180/pi)*atan2(x_ship-mouseX, y_ship-mouseY)
-                ang = angle
-                # shipOnRotated = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/spaceship_on"
-                #                                                                                  ".png"), (70, 90)),
-                #                                         int(angle))
-                # display.blit(shipOnRotated, (x_ship, y_ship))
-                # pygame.display.update()
+                angle = angle = (180 / pi) * atan2(x_ship - mouseX, y_ship - mouseY) 
+                # print(angle)
+                
+                
+                display.blit(pygame.transform.rotate(shipOn, int(angle)),shipOn.get_rect(center=(x_ship,y_ship))) #I need space_ship to rotate towards my cursor
+                pygame.display.update()
+                clock.tick(60)
+            else: 
+                engine_on = False
 
 
         if w_pressed:
@@ -89,11 +89,12 @@ def run():
             engine_on = False
 
         display.fill((255, 255, 255))
-        moveShip(ang)
+        moveShip()
         for shot in shots_list:
             shot.move()
 
         display.blit(asteroid, (100, 100))
+
 
         if x_ship > 0:
             x_ship -= ship_acceleration
@@ -102,14 +103,12 @@ def run():
         clock.tick(60)
 
 
-def moveShip(ang):
-
+def moveShip():
+    global engine_on
     if engine_on:
-        # display.blit(shipOn, (x_ship, y_ship))
-        display.blit(pygame.transform.rotate(shipOn, ang+90), (x_ship, y_ship))
+        display.blit(shipOn, (x_ship, y_ship))
     else:
-        # display.blit(shipOff, (x_ship, y_ship))
-        display.blit(pygame.transform.rotate(shipOff, ang+90), (x_ship, y_ship))
+        display.blit(shipOff, (x_ship, y_ship))
 
 
 class Missile:
