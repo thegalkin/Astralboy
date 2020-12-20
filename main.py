@@ -1,7 +1,6 @@
-from math import pi, atan2
-
 import pygame
-
+from math import atan2, pi
+from random import randint
 pygame.init()
 
 display_width = 800
@@ -12,10 +11,13 @@ pygame.display.set_caption("Astralboy")
 
 clock = pygame.time.Clock()
 
-shipOn = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (70, 90)), -90)
-shipOff = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90)), -90)
+shipOn = pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (70, 90))
+shipOff = pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90))
 missile = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/missile.png"), (20, 40)), -90)
-asteroid = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/asteroid.png"), (100, 100)), -90)
+asteroidImage = pygame.image.load("static/asteroid.png")
+
+def bake_asteroid(angle, scaleSquare):
+    return pygame.transform.rotate(pygame.transform.scale(asteroidImage, (scaleSquare, scaleSquare)), -angle)
 
 
 x_ship = display_width/2
@@ -26,17 +28,24 @@ y_shot = 0
 shot = False
 engine_on = False
 shots_list = []
+asteroids_list = []
+asteroids_objects = []
+
+asteroids_spawn_areaSize = 100.0
+asteroids_speed = 1
+asteroids_amount = 10
 
 
 def run():
-    global x_ship, y_ship, x_shot, y_shot, shot
+    global x_ship, y_ship, x_shot, y_shot, shot, shipOn
     game = True
 
     w_pressed = False
     s_pressed = False
     d_pressed = False
     ang = -90
-
+    for i in range(asteroids_amount):
+            Asteroid(randint(display_width, display_width+asteroids_spawn_areaSize), randint(-asteroids_spawn_areaSize, display_height+asteroids_spawn_areaSize))
     while game:
         global engine_on
         for event in pygame.event.get():
@@ -60,16 +69,10 @@ def run():
                 if event.key == pygame.K_d:
                     d_pressed = False
             if event.type == pygame.MOUSEMOTION:
+                engine_on = True
                 mouseX = pygame.mouse.get_pos()[0]
                 mouseY = pygame.mouse.get_pos()[1]
-                angle = (180/pi)*atan2(x_ship-mouseX, y_ship-mouseY)
-                ang = angle
-                # shipOnRotated = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/spaceship_on"
-                #                                                                                  ".png"), (70, 90)),
-                #                                         int(angle))
-                # display.blit(shipOnRotated, (x_ship, y_ship))
-                # pygame.display.update()
-
+                angle = ang = (180 / pi) * atan2(x_ship - mouseX, y_ship - mouseY)
 
         if w_pressed:
             if y_ship < -70:
@@ -93,11 +96,11 @@ def run():
         for shot in shots_list:
             shot.move()
 
-        display.blit(asteroid, (100, 100))
-
         if x_ship > 0:
             x_ship -= ship_acceleration
-
+        
+        for asteroidI in asteroids_list:
+            asteroidI.move()    
         pygame.display.update()
         clock.tick(60)
 
@@ -105,11 +108,25 @@ def run():
 def moveShip(ang):
 
     if engine_on:
-        # display.blit(shipOn, (x_ship, y_ship))
-        display.blit(pygame.transform.rotate(shipOn, ang+90), (x_ship, y_ship))
+        display.blit(pygame.transform.rotate(shipOn, ang), (x_ship, y_ship))
     else:
-        # display.blit(shipOff, (x_ship, y_ship))
-        display.blit(pygame.transform.rotate(shipOff, ang+90), (x_ship, y_ship))
+        display.blit(pygame.transform.rotate(shipOff, ang), (x_ship, y_ship))
+
+
+class Asteroid:
+    def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            asteroids_list.append(self)
+            self.angle = randint(0,90)
+            self.scale = randint(10,150)
+
+    def move(self):
+        if -asteroids_spawn_areaSize < self.x: # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize < self.y < display_height+asteroids_spawn_areaSize:
+            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
+            self.x -= asteroids_speed
+        else:
+            asteroids_list.remove(self)
 
 
 class Missile:
