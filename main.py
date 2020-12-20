@@ -1,5 +1,6 @@
 import pygame
 from math import atan2, pi
+from random import randint
 pygame.init()
 
 display_width = 800
@@ -24,7 +25,9 @@ y_shot = 0
 shot = False
 engine_on = False
 shots_list = []
-
+asteroids_list = []
+asteroids_spawn_areaSize = 100.0
+asteroids_speed = 3
 
 def run():
     global x_ship, y_ship, x_shot, y_shot, shot, shipOn
@@ -33,7 +36,8 @@ def run():
     w_pressed = False
     s_pressed = False
     d_pressed = False
-
+    for i in range(40):
+            Asteroid(randint(display_width, display_width+asteroids_spawn_areaSize), randint(-asteroids_spawn_areaSize, display_height+asteroids_spawn_areaSize))
     while game:
         global engine_on
         for event in pygame.event.get():
@@ -98,7 +102,9 @@ def run():
 
         if x_ship > 0:
             x_ship -= ship_acceleration
-
+        
+        for asteroidI in asteroids_list:
+            asteroidI.move()    
         pygame.display.update()
         clock.tick(60)
 
@@ -110,7 +116,20 @@ def moveShip():
     else:
         display.blit(shipOff, (x_ship, y_ship))
 
+class Asteroid:
+    def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            asteroids_list.append(self)
+    def move(self):
+        if -asteroids_spawn_areaSize < self.x: # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize < self.y < display_height+asteroids_spawn_areaSize:
+            display.blit(asteroid, (self.x, self.y))
+            self.x -= asteroids_speed
+        else:
+            asteroids_list.remove(self)
 
+
+    
 class Missile:
     def __init__(self, x, y):
         self.x = x
