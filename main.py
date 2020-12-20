@@ -14,7 +14,10 @@ clock = pygame.time.Clock()
 shipOn = pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (70, 90))
 shipOff = pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90))
 missile = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/missile.png"), (20, 40)), -90)
-asteroid = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/asteroid.png"), (100, 100)), -90)
+asteroidImage = pygame.image.load("static/asteroid.png")
+
+def bake_asteroid(angle, scaleSquare):
+    return pygame.transform.rotate(pygame.transform.scale(asteroidImage, (scaleSquare, scaleSquare)), -angle)
 
 
 x_ship = display_width/2
@@ -26,8 +29,11 @@ shot = False
 engine_on = False
 shots_list = []
 asteroids_list = []
+asteroids_objects = []
+
 asteroids_spawn_areaSize = 100.0
-asteroids_speed = 3
+asteroids_speed = 1
+asteroids_amount = 10
 
 def run():
     global x_ship, y_ship, x_shot, y_shot, shot, shipOn
@@ -36,7 +42,7 @@ def run():
     w_pressed = False
     s_pressed = False
     d_pressed = False
-    for i in range(40):
+    for i in range(asteroids_amount):
             Asteroid(randint(display_width, display_width+asteroids_spawn_areaSize), randint(-asteroids_spawn_areaSize, display_height+asteroids_spawn_areaSize))
     while game:
         global engine_on
@@ -97,7 +103,7 @@ def run():
         for shot in shots_list:
             shot.move()
 
-        display.blit(asteroid, (100, 100))
+        # display.blit(asteroid, (100, 100))
 
 
         if x_ship > 0:
@@ -121,9 +127,12 @@ class Asteroid:
             self.x = x
             self.y = y
             asteroids_list.append(self)
+            self.angle = randint(0,90)
+            self.scale = randint(10,150)
+            
     def move(self):
         if -asteroids_spawn_areaSize < self.x: # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize < self.y < display_height+asteroids_spawn_areaSize:
-            display.blit(asteroid, (self.x, self.y))
+            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
             self.x -= asteroids_speed
         else:
             asteroids_list.remove(self)
