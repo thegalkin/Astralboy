@@ -221,7 +221,7 @@ class Asteroid(pygame.sprite.Sprite):
         
         self.angle = randint(0, 90)
         self.scale = randint(10, 150)
-        self.speed = randint(1, 5)
+        self.speed = randint(1, 3)
         self.rollSpeed = randint(10, 20)
         self.rollDirection = randint(0, 1)
         self.image_orig = pygame.transform.scale(pygame.transform.rotate(asteroidImage, self.angle), (self.scale, self.scale))
@@ -246,7 +246,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.image = new_image
             self.rect = self.image.get_rect()
             self.rect.center = old_center
-            self.rect.x -= asteroids_speed
+            self.rect.x -= self.speed
         else:
             asteroids_list.remove(self)
             asteroids_group.remove(self)
