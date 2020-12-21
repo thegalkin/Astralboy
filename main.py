@@ -1,7 +1,7 @@
 import pygame
 from math import atan2, pi, sin, cos, radians
 from random import randint
-from time import time
+from time import time, sleep
 
 pygame.init()
 
@@ -253,6 +253,20 @@ class Asteroid:
             self.angle = self.angle - self.rollSpeed
             display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
 
+class Explosion:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.stage = 0
+        self.maxStage = 8
+    def move(self):
+        if self.stage < 9:
+            display.blit(pygame.image.load("static/explosion/regularExplosion0{}.png".format(self.stage)), (self.x, self.y))
+    def animation(self):
+        for i in range(9):
+            sleep(0.1)
+            self.move()
+
 
 class Missile:
     def __init__(self, x, y, angle):
@@ -274,9 +288,11 @@ class Missile:
             if asteroids_list[i].x - asteroids_list[i].scale * 0.5 < self.x < asteroids_list[i].x + asteroids_list[
                 i].scale * 0.5 and asteroids_list[i].y - asteroids_list[i].scale * 0.5 < self.y < asteroids_list[i].y + \
                     asteroids_list[i].scale * 0.5:
+                explosion = Explosion(self.x, self.y)
+                explosion.animation()
                 del asteroids_list[i]
                 user_score += 1
-                shots_list.remove(self)
+                shots_list.remove(self) 
                 break
         self.life -= 10
 
