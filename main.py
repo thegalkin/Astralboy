@@ -222,7 +222,7 @@ class Asteroid(pygame.sprite.Sprite):
         self.angle = randint(0, 90)
         self.scale = randint(10, 150)
         self.speed = randint(1, 3)
-        self.rollSpeed = randint(10, 20)
+        self.rollSpeed = randint(1, 3)*0.3
         self.rollDirection = randint(0, 1)
         self.image_orig = pygame.transform.scale(pygame.transform.rotate(asteroidImage, self.angle), (self.scale, self.scale))
         self.image = self.image_orig.copy()
@@ -241,7 +241,7 @@ class Asteroid(pygame.sprite.Sprite):
         global user_lives, start
         if -asteroids_spawn_areaSize < self.rect.x:  # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize
             # < self.y < display_height+asteroids_spawn_areaSize:
-            new_image = pygame.transform.scale(pygame.transform.rotate(self.image_orig, self.angle), (self.scale, self.scale))
+            new_image = pygame.transform.rotate(self.image_orig, self.angle)
             old_center = self.rect.center
             self.image = new_image
             self.rect = self.image.get_rect()
@@ -265,14 +265,14 @@ class Asteroid(pygame.sprite.Sprite):
     def rollnrock(self):
         if self.rollDirection == 1:
             self.angle = self.angle + self.rollSpeed
-            new_image = pygame.transform.scale(pygame.transform.rotate(self.image_orig, self.angle), (self.scale, self.scale))
+            new_image = pygame.transform.rotate(self.image, self.angle)
             old_center = self.rect.center
             self.image = new_image
             self.rect = self.image.get_rect()
             self.rect.center = old_center
         else:
             self.angle = self.angle - self.rollSpeed
-            new_image = pygame.transform.scale(pygame.transform.rotate(self.image_orig, self.angle), (self.scale, self.scale))
+            new_image = pygame.transform.rotate(self.image, self.angle)
             old_center = self.rect.center
             self.image = new_image
             self.rect = self.image.get_rect()
