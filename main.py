@@ -77,6 +77,7 @@ ship_group = pygame.sprite.Group()
 ship_group.add(ship)
 
 missile_group = pygame.sprite.Group()
+asteroids_group = pygame.sprite.Group()
 
 
 def run():
@@ -98,9 +99,9 @@ def run():
         if time() - asteroids_previous >= asteroids_time:
             asteroids_previous = time()
             for i in range(randint(1, 10)):
-                Asteroid(randint(display_width, display_width + asteroids_spawn_areaSize),
+                asteroid = Asteroid(randint(display_width, display_width + asteroids_spawn_areaSize),
                          randint(-asteroids_spawn_areaSize, display_height + asteroids_spawn_areaSize))
-        
+                asteroids_group.add(asteroid)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -151,6 +152,10 @@ def run():
             ship_group.update()
             missile_group.draw(display)
             missile_group.update()
+            ship_group.draw(display)
+            ship_group.update()
+            asteroids_group.draw(display)
+            asteroids_group.update()
 
             for asteroidI in asteroids_list:
                 asteroidI.move()
@@ -209,38 +214,63 @@ class CrossHairs:
         display.blit(crosshairsImage, (self.x, self.y))
 
 
-class Asteroid:
+class Asteroid(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        asteroids_list.append(self)
+        super().__init__()
+        
         self.angle = randint(0, 90)
         self.scale = randint(10, 150)
         self.speed = randint(1, 5)
         self.rollSpeed = randint(10, 20)
         self.rollDirection = randint(0, 1)
+        self.image_orig = pygame.transform.scale(pygame.transform.rotate(asteroidImage, self.angle), (self.scale, self.scale))
+        self.image = self.image_orig.copy()
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.rect.centerx = self.rect.centerx
+        self.rect.centery = self.rect.centery
+
+        asteroids_list.append(self)
+        
+    def update(self):
+        self.move()
 
     def move(self):
         global user_lives
-        if -asteroids_spawn_areaSize < self.x:  # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize
+        if -asteroids_spawn_areaSize < self.rect.x:  # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize
             # < self.y < display_height+asteroids_spawn_areaSize:
-            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
-            self.x -= asteroids_speed
+            new_image = pygame.transform.scale(pygame.transform.rotate(self.image_orig, self.angle), (self.scale, self.scale))
+            old_center = self.rect.center
+            self.image = new_image
+            self.rect = self.image.get_rect()
+            self.rect.center = old_center
+            self.rect.x -= asteroids_speed
         else:
             asteroids_list.remove(self)
-        if self.x - self.scale * 0.5 < ship.rect.centerx < self.x + self.scale * 0.5 and self.y - self.scale * 0.5 < ship.rect.centery < self.y + self.scale * 0.5:
+        if self.rect.x - self.scale * 0.5 < ship.rect.centerx < self.rect.x + self.scale * 0.5 and self.rect.y - self.scale * 0.5 < ship.rect.centery < self.rect.y + self.scale * 0.5:
             user_lives -= 1
-            explosion = Explosion(self.x, self.y, self.scale)
+            explosion = Explosion(self.rect.x, self.rect.y, self.scale)
+            
+            asteroids_group.remove(self)
             asteroids_list.remove(self)
             del self
 
     def rollnrock(self):
         if self.rollDirection == 1:
             self.angle = self.angle + self.rollSpeed
-            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
+            new_image = pygame.transform.scale(pygame.transform.rotate(self.image_orig, self.angle), (self.scale, self.scale))
+            old_center = self.rect.center
+            self.image = new_image
+            self.rect = self.image.get_rect()
+            self.rect.center = old_center
         else:
             self.angle = self.angle - self.rollSpeed
-            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
+            new_image = pygame.transform.scale(pygame.transform.rotate(self.image_orig, self.angle), (self.scale, self.scale))
+            old_center = self.rect.center
+            self.image = new_image
+            self.rect = self.image.get_rect()
+            self.rect.center = old_center
 
 
 class Explosion:
@@ -283,13 +313,15 @@ class Missile(pygame.sprite.Sprite):
     def move(self):
         global user_score
         for i in range(len(asteroids_list)):
-            if asteroids_list[i].x - asteroids_list[i].scale * 0.5 < self.rect.x < asteroids_list[i].x + asteroids_list[
-                i].scale * 0.5 and asteroids_list[i].y - asteroids_list[i].scale * 0.5 < self.rect.y < asteroids_list[i].y + \
+            if asteroids_list[i].rect.x - asteroids_list[i].scale * 0.5 < self.rect.x < asteroids_list[i].rect.x + asteroids_list[
+                i].scale * 0.5 and asteroids_list[i].rect.y - asteroids_list[i].scale * 0.5 < self.rect.y < asteroids_list[i].rect.y + \
                     asteroids_list[i].scale * 0.5:
                 explosion = Explosion(self.rect.x, self.rect.y, asteroids_list[i].scale)
+                asteroids_group.remove(asteroids_list[i])
                 del asteroids_list[i]
                 user_score += 1
                 missile_group.remove(self)
+                
                 break
         self.life -= 10
 
