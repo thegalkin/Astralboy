@@ -19,6 +19,8 @@ missile = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("stat
 asteroidImage = pygame.image.load("static/asteroid.png")
 background = pygame.image.load("static/background.png").convert()
 
+explosion_image_list = [pygame.image.load("static/explosion/regularExplosion0{}.png".format(i)) for i in range(9)]
+
 crosshairsImage = pygame.transform.scale(pygame.image.load("static/crosshairs.png"), (90, 90))
 
 x_ship = display_width / 2
@@ -34,13 +36,16 @@ engine_on = False
 shots_list = []
 asteroids_list = []
 asteroids_objects = []
+exsplosions_list = []
 
 asteroids_spawn_areaSize = 100.0
 asteroids_speed = 1
 asteroids_amount = 10
 asteroids_time = 5
+explosion_time = 0.05
 user_score = 0
 user_lives = 5
+
 
 font = pygame.font.Font("static/font.ttf", 20)
 
@@ -58,6 +63,7 @@ def run():
     angle = -90
     crosshairs = CrossHairs(0, 0)
     asteroids_previous = 0
+    explosion_previous = 0
 
     while game:
         global engine_on
@@ -66,6 +72,7 @@ def run():
             for i in range(randint(1, 10)):
                 Asteroid(randint(display_width, display_width + asteroids_spawn_areaSize),
                          randint(-asteroids_spawn_areaSize, display_height + asteroids_spawn_areaSize))
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -132,6 +139,12 @@ def run():
                 asteroidI.rollnrock()
             for shot in shots_list:
                 shot.move()
+            if len(asteroids_list) > 0:
+                print("clock")
+                if time() - explosion_previous >= explosion_time:
+                    explosion_previous = time()
+                    for explosion in exsplosions_list:
+                        explosion.move()
             score = font.render("Score: " + str(user_score), True, (255, 0, 0))
             display.blit(score, (600, 20))
             lives = font.render("Lives: " + str(user_lives), True, (255, 0, 0))
@@ -254,18 +267,22 @@ class Asteroid:
             display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
 
 class Explosion:
-    def __init__(self, x, y):
+    def __init__(self, x, y, scale):
         self.x = x
         self.y = y
         self.stage = 0
         self.maxStage = 8
+        self.scale = scale
+        exsplosions_list.append(self)
+        
+
     def move(self):
         if self.stage < 9:
-            display.blit(pygame.image.load("static/explosion/regularExplosion0{}.png".format(self.stage)), (self.x, self.y))
-    def animation(self):
-        for i in range(9):
-            sleep(0.1)
-            self.move()
+            display.blit(pygame.transform.scale(explosion_image_list[self.stage], (self.scale, self.scale)), (self.x, self.y))
+            self.stage += 1 
+        else:
+            exsplosions_list.remove(self)
+    
 
 
 class Missile:
@@ -288,8 +305,7 @@ class Missile:
             if asteroids_list[i].x - asteroids_list[i].scale * 0.5 < self.x < asteroids_list[i].x + asteroids_list[
                 i].scale * 0.5 and asteroids_list[i].y - asteroids_list[i].scale * 0.5 < self.y < asteroids_list[i].y + \
                     asteroids_list[i].scale * 0.5:
-                explosion = Explosion(self.x, self.y)
-                explosion.animation()
+                explosion = Explosion(self.x, self.y, asteroids_list[i].scale)
                 del asteroids_list[i]
                 user_score += 1
                 shots_list.remove(self) 
