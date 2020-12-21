@@ -5,13 +5,13 @@ from time import time, sleep
 
 pygame.init()
 
-display_width = 800
-display_height = 600
-display = pygame.display.set_mode((display_width, display_height))
-pygame.display.set_caption("Astralboy")
+display_width = 800 #ширина игровой области
+display_height = 600 #высота игровой области
+display = pygame.display.set_mode((display_width, display_height))#создаем дисплей
+pygame.display.set_caption("Astralboy")#устанавливаем заголовок окна 
 
-clock = pygame.time.Clock()
-
+clock = pygame.time.Clock()#запускаем внутриигровые часы
+#Блок с загрузкой из памяти игровых изображений 
 shipOn = pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (70, 90))
 shipOff = pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90))
 missileImg = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/missile.png"), (20, 40)), -90)
@@ -21,24 +21,25 @@ explosion_image_list = [pygame.image.load("static/explosion/regularExplosion0{}.
 crosshairsImage = pygame.transform.scale(pygame.image.load("static/crosshairs.png"), (90, 90))
 font = pygame.font.Font("static/font.ttf", 20)
 
-ship_acceleration = 2
-x_bg = 0
-angle = -90
-shot = False
-shot_speed = 10
-engine_on = False
-shots_list = []
-asteroids_list = []
-asteroids_objects = []
-exsplosions_list = []
 
-asteroids_spawn_areaSize = 100.0
-asteroids_speed = 1
-asteroids_amount = 10
-asteroids_time = 5
-explosion_time = 0.05
-user_score = 0
-user_lives = 5
+#блок с глобальными переменными
+ship_acceleration = 2#ускорение корабля
+x_bg = 0#положение фона по х
+angle = -90#угол поворота корабля
+shot = False
+shot_speed = 10#скорость полета ракеты
+engine_on = False#состояние двигателя
+shots_list = []#список ракет на экране
+asteroids_list = [] #список астероидов на экране
+exsplosions_list = []#список взрывов на экране
+
+asteroids_spawn_areaSize = 100.0 #размер зоны для появляения астероидов
+asteroids_speed = 1 #скорость астероидов
+asteroids_amount = 10 #кол-во астероидов 
+asteroids_time = 5 #скорость появления астероидов
+explosion_time = 0.05 #скорость анимации взрыва
+user_score = 0 #кол-во очков игрока
+user_lives = 5 #кол-во жизней игрока
 
 
 class Ship(pygame.sprite.Sprite):
