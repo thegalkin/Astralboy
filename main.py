@@ -29,8 +29,6 @@ angle = -90  # угол поворота корабля
 shot = False
 shot_speed = 10  # скорость полета ракеты
 engine_on = False  # состояние двигателя
-shots_list = []  # список ракет на экране
-asteroids_list = []  # список астероидов на экране
 exsplosions_list = []  # список взрывов на экране
 
 asteroids_spawn_areaSize = 100.0  # размер зоны для появляения астероидов
@@ -41,6 +39,10 @@ explosion_time = 0.05  # скорость анимации взрыва
 user_score = 0  # кол-во очков игрока
 user_lives = 5  # кол-во жизней игрока
 game_end = False  # конец игры
+
+ship_group = pygame.sprite.Group()
+missile_group = pygame.sprite.Group()
+asteroids_group = pygame.sprite.Group()
 
 
 class Ship(pygame.sprite.Sprite):
@@ -53,6 +55,9 @@ class Ship(pygame.sprite.Sprite):
         self.rect.x = display_width / 2
         self.rect.y = display_height / 2
         self.angle = -90
+        self.mask = pygame.mask.from_surface(self.image)
+        ship_group.add(self)
+
 
     def update(self):
         if self.engine:
@@ -74,11 +79,7 @@ class Ship(pygame.sprite.Sprite):
 
 
 ship = Ship()
-ship_group = pygame.sprite.Group()
-ship_group.add(ship)
 
-missile_group = pygame.sprite.Group()
-asteroids_group = pygame.sprite.Group()
 start = False
 
 
@@ -116,7 +117,6 @@ def run():
                     d_pressed = True
                 if event.key == pygame.K_SPACE:
                     missile = Missile()
-                    missile_group.add(missile)
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_w:
                     w_pressed = False
@@ -153,17 +153,15 @@ def run():
             ship_group.update()
             missile_group.draw(display)
             missile_group.update()
-            ship_group.draw(display)
-            ship_group.update()
+
+            for ast in asteroids_group:
+                ast.move()
+                ast.rollnrock()
+
             asteroids_group.draw(display)
             asteroids_group.update()
 
-            for asteroidI in asteroids_list:
-                asteroidI.move()
-                asteroidI.rollnrock()
-            # for shot in shots_list:
-            #     shot.move()
-            if len(asteroids_list) > 0:
+            if len(asteroids_group) > 0:
                 if time() - explosion_previous >= explosion_time:
                     explosion_previous = time()
                     for explosion in exsplosions_list:
@@ -174,14 +172,16 @@ def run():
             display.blit(lives, (200, 20))
         else:
             display.blit(background, (0, 0))
-            for asteroidI in asteroids_list:
-                asteroidI.move()
-                asteroidI.rollnrock()
+            for ast in asteroids_group:
+                ast.move()
+                ast.rollnrock()
             s = pygame.Surface((400, 300), pygame.SRCALPHA)
             s.fill((34, 36, 98, 128))
             display.blit(s, (200, 150))
             menu = pygame.image.load("static/menu.png")
             display.blit(menu, (200, 150))
+            user_score = 0
+            user_lives = 5
             score = font.render("Score: " + str(user_score), True, (255, 0, 0))
             display.blit(score, (600, 20))
             lives = font.render("Lives: " + str(user_lives), True, (255, 0, 0))
@@ -218,7 +218,6 @@ class CrossHairs:
 class Asteroid(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        
         self.angle = randint(0, 90)
         self.scale = randint(10, 150)
         self.speed = randint(1, 3)
@@ -231,16 +230,15 @@ class Asteroid(pygame.sprite.Sprite):
         self.rect.y = y
         self.rect.centerx = self.rect.centerx
         self.rect.centery = self.rect.centery
-
-        asteroids_list.append(self)
+        self.mask = pygame.mask.from_surface(self.image)
+        asteroids_group.add(self)
         
     def update(self):
         self.move()
 
     def move(self):
-        global user_lives, start
-        if -asteroids_spawn_areaSize < self.rect.x:  # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize
-            # < self.y < display_height+asteroids_spawn_areaSize:
+        global user_lives, user_score, start
+        if -asteroids_spawn_areaSize < self.rect.x:
             new_image = pygame.transform.rotate(self.image_orig, self.angle)
             old_center = self.rect.center
             self.image = new_image
@@ -248,19 +246,19 @@ class Asteroid(pygame.sprite.Sprite):
             self.rect.center = old_center
             self.rect.x -= self.speed
         else:
-            asteroids_list.remove(self)
             asteroids_group.remove(self)
-        if self.rect.x - self.scale * 0.5 < ship.rect.centerx < self.rect.x + self.scale * 0.5 and self.rect.y - self.scale * 0.5 < ship.rect.centery < self.rect.y + self.scale * 0.5:
-            user_lives -= 1
+        if start:
+            if pygame.sprite.collide_mask(self, ship):
+                Explosion(self.rect.x, self.rect.y, self.scale)
+                asteroids_group.remove(self)
+                del self
+                ship.rect.x = display_width / 2
+                ship.rect.y = display_height / 2
+                user_lives -= 1
             if user_lives == 0:
                 start = False
                 user_lives = 5
-            explosion = Explosion(self.rect.x, self.rect.y, self.scale)
-            asteroids_list.remove(self)
-            asteroids_group.remove(self)
-            del self
-            ship.rect.x = display_width / 2
-            ship.rect.y = display_height / 2
+                user_score = 0
 
     def rollnrock(self):
         if self.rollDirection == 1:
@@ -306,36 +304,55 @@ class Missile(pygame.sprite.Sprite):
         self.rect.centerx = ship.rect.centerx
         self.rect.centery = ship.rect.centery
         self.life = 500
-        shots_list.append(self)
+        self.mask = pygame.mask.from_surface(self.image)
+        missile_group.add(self)
 
     def update(self):
+        global user_score
         if 0 < self.rect.x < display_width or 0 < self.rect.y < display_height:
             self.rect.x += int((shot_speed * cos(radians(self.angle))))
             self.rect.y -= int((shot_speed * sin(radians(self.angle))))
         else:
             missile_group.remove(self)
-        self.move()
 
-    def move(self):
-        global user_score
-        for i in range(len(asteroids_list)):
-            if asteroids_list[i].rect.x - asteroids_list[i].scale * 0.5 < self.rect.x < asteroids_list[i].rect.x + asteroids_list[
-                i].scale * 0.5 and asteroids_list[i].rect.y - asteroids_list[i].scale * 0.5 < self.rect.y < asteroids_list[i].rect.y + \
-                    asteroids_list[i].scale * 0.5:
-                explosion = Explosion(self.rect.x, self.rect.y, asteroids_list[i].scale)
-                asteroids_group.remove(asteroids_list[i])
-                del asteroids_list[i]
-                user_score += 1
+        for ast in asteroids_group:
+            if pygame.sprite.collide_mask(self, ast):
+                Explosion(self.rect.x, self.rect.y, ast.scale)
+                asteroids_group.remove(ast)
                 missile_group.remove(self)
-                
+                del ast
+                user_score += 1
                 break
         self.life -= 10
-
         try:
             if self.life <= 0:
                 missile_group.remove(self)
         except ValueError:
             pass
+
+
+        # self.move()
+
+    # def move(self):
+    #     global user_score
+    #     for i in range(len(asteroids_group)):
+    #         if asteroids_group[i].rect.x - asteroids_group[i].scale * 0.5 < self.rect.x < asteroids_group[i].rect.x + asteroids_group[
+    #             i].scale * 0.5 and asteroids_group[i].rect.y - asteroids_group[i].scale * 0.5 < self.rect.y < asteroids_group[i].rect.y + \
+    #                 asteroids_group[i].scale * 0.5:
+    #             explosion = Explosion(self.rect.x, self.rect.y, asteroids_group[i].scale)
+    #             asteroids_group.remove(asteroids_group[i])
+    #             del asteroids_group[i]
+    #             user_score += 1
+    #             missile_group.remove(self)
+    #
+    #             break
+    #     self.life -= 10
+    #
+    #     try:
+    #         if self.life <= 0:
+    #             missile_group.remove(self)
+    #     except ValueError:
+    #         pass
 
 
 run()
