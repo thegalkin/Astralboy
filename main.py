@@ -239,7 +239,7 @@ class Asteroid(pygame.sprite.Sprite):
 
     def move(self):
         global user_lives, start
-        if -asteroids_spawn_areaSize < self.x:  # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize
+        if -asteroids_spawn_areaSize < self.rect.x:  # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize
             # < self.y < display_height+asteroids_spawn_areaSize:
             new_image = pygame.transform.scale(pygame.transform.rotate(self.image_orig, self.angle), (self.scale, self.scale))
             old_center = self.rect.center
@@ -249,6 +249,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.rect.x -= asteroids_speed
         else:
             asteroids_list.remove(self)
+            asteroids_group.remove(self)
         if self.rect.x - self.scale * 0.5 < ship.rect.centerx < self.rect.x + self.scale * 0.5 and self.rect.y - self.scale * 0.5 < ship.rect.centery < self.rect.y + self.scale * 0.5:
             user_lives -= 1
             if user_lives == 0:
