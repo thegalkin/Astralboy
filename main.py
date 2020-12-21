@@ -5,49 +5,56 @@ from time import time, sleep
 
 pygame.init()
 
-display_width = 800
-display_height = 600
+display_width = 800 #ширина игровой области
+display_height = 600 #высота игровой области
 
-display = pygame.display.set_mode((display_width, display_height))
-pygame.display.set_caption("Astralboy")
+display = pygame.display.set_mode((display_width, display_height)) #создаем дисплей
+pygame.display.set_caption("Astralboy") #устанавливаем заголовок окна 
 
-clock = pygame.time.Clock()
+clock = pygame.time.Clock() #запускаем внутриигровые часы
 
-shipOn = pygame.transform.scale(pygame.image.load("static/spaceship_on.png"), (70, 90))
-shipOff = pygame.transform.scale(pygame.image.load("static/spaceship_off.png"), (70, 90))
-missile = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("static/missile.png"), (20, 40)), -90)
+#Блок с загрузкой из памяти игровых изображений 
+shipOn = pygame.transform.scale(
+    pygame.image.load("static/spaceship_on.png"), (70, 90))
+shipOff = pygame.transform.scale(
+    pygame.image.load("static/spaceship_off.png"), (70, 90))
+missile = pygame.transform.rotate(pygame.transform.scale(
+    pygame.image.load("static/missile.png"), (20, 40)), -90)
 asteroidImage = pygame.image.load("static/asteroid.png")
 background = pygame.image.load("static/background.png").convert()
 
-explosion_image_list = [pygame.image.load("static/explosion/regularExplosion0{}.png".format(i)) for i in range(9)]
+explosion_image_list = [pygame.image.load(
+    "static/explosion/regularExplosion0{}.png".format(i)) for i in range(9)]
 
-crosshairsImage = pygame.transform.scale(pygame.image.load("static/crosshairs.png"), (90, 90))
+crosshairsImage = pygame.transform.scale(
+    pygame.image.load("static/crosshairs.png"), (90, 90))
 
-x_ship = display_width / 2
-y_ship = display_height / 2
-ship_acceleration = 2
-x_shot = 0
-y_shot = 0
-x_bg = 0
-angle = -90
+
+#блок с глобальными переменными
+x_ship = display_width / 2 #положение корабля по х
+y_ship = display_height / 2 #положение корабля по у
+ship_acceleration = 2 #ускорение корабля
+x_shot = 0 #положение ракеты по х
+y_shot = 0 #положение ракеты по у
+x_bg = 0  #положение фона по х
+angle = -90 #угол поворота корабля
 shot = False
-shot_speed = 10
-engine_on = False
-shots_list = []
-asteroids_list = []
-asteroids_objects = []
-exsplosions_list = []
+shot_speed = 10 #скорость полета ракеты
+engine_on = False #состояние двигателя
+shots_list = [] #список ракет на экране
+asteroids_list = [] #список астероидов на экране
+exsplosions_list = [] #список взрывов на экране
 
-asteroids_spawn_areaSize = 100.0
-asteroids_speed = 1
-asteroids_amount = 10
-asteroids_time = 5
-explosion_time = 0.05
-user_score = 0
-user_lives = 5
+asteroids_spawn_areaSize = 100.0 #размер зоны для появляения астероидов
+asteroids_speed = 1 #скорость астероидов
+asteroids_amount = 10 #кол-во астероидов 
+asteroids_time = 5 #скорость появления астероидов
+explosion_time = 0.05 #скорость анимации взрыва
+user_score = 0 #кол-во очков игрока
+user_lives = 5 #кол-во жизней игрока
 
 
-font = pygame.font.Font("static/font.ttf", 20)
+font = pygame.font.Font("static/font.ttf", 20) #игровой шрифт
 
 
 def run():
@@ -72,7 +79,7 @@ def run():
             for i in range(randint(1, 10)):
                 Asteroid(randint(display_width, display_width + asteroids_spawn_areaSize),
                          randint(-asteroids_spawn_areaSize, display_height + asteroids_spawn_areaSize))
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -96,7 +103,8 @@ def run():
             if event.type == pygame.MOUSEMOTION:
                 mouseX = pygame.mouse.get_pos()[0]
                 mouseY = pygame.mouse.get_pos()[1]-35
-                angle = ang = (180 / pi) * atan2(x_ship - mouseX, y_ship - mouseY)
+                angle = ang = (180 / pi) * atan2(x_ship -
+                                                 mouseX, y_ship - mouseY)
                 crosshairs.move(mouseX, mouseY)
                 mouse_move = True
             if event.type == pygame.MOUSEBUTTONUP:
@@ -131,8 +139,6 @@ def run():
             ship = Ship(x_ship, y_ship, engine_on, ang)
             ship.move()
             # moveShip(ang)
-
-
 
             for asteroidI in asteroids_list:
                 asteroidI.move()
@@ -205,7 +211,6 @@ class Ship:
         # print(self.rect.x, self.rect.y)
         print(self.rect.y)
 
-
     def move(self):
         if self.engine:
             # print(pygame.transform.rotate(shipOn, self.angle).get_rect().center)
@@ -213,15 +218,11 @@ class Ship:
             img.get_rect().center = (45, 35)
             bl = display.blit(self.img, (self.x, self.y))
 
-
-
-
         else:
             # print(pygame.transform.rotate(shipOn, self.angle).get_rect().center)
             img = pygame.transform.rotate(shipOff, self.angle)
             img.get_rect().center = (45, 35)
             bl = display.blit(self.img, (self.x, self.y))
-
 
 
 class CrossHairs:
@@ -250,7 +251,8 @@ class Asteroid:
         global user_lives
         if -asteroids_spawn_areaSize < self.x:  # < display_width+asteroids_spawn_areaSize or asteroids_spawn_areaSize
             # < self.y < display_height+asteroids_spawn_areaSize:
-            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
+            display.blit(bake_asteroid(
+                self.angle, self.scale), (self.x, self.y))
             self.x -= asteroids_speed
         else:
             asteroids_list.remove(self)
@@ -261,10 +263,13 @@ class Asteroid:
     def rollnrock(self):
         if self.rollDirection == 1:
             self.angle = self.angle + self.rollSpeed
-            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
+            display.blit(bake_asteroid(
+                self.angle, self.scale), (self.x, self.y))
         else:
             self.angle = self.angle - self.rollSpeed
-            display.blit(bake_asteroid(self.angle, self.scale), (self.x, self.y))
+            display.blit(bake_asteroid(
+                self.angle, self.scale), (self.x, self.y))
+
 
 class Explosion:
     def __init__(self, x, y, scale):
@@ -274,15 +279,14 @@ class Explosion:
         self.maxStage = 8
         self.scale = scale
         exsplosions_list.append(self)
-        
 
     def move(self):
         if self.stage < 9:
-            display.blit(pygame.transform.scale(explosion_image_list[self.stage], (self.scale, self.scale)), (self.x, self.y))
-            self.stage += 1 
+            display.blit(pygame.transform.scale(
+                explosion_image_list[self.stage], (self.scale, self.scale)), (self.x, self.y))
+            self.stage += 1
         else:
             exsplosions_list.remove(self)
-    
 
 
 class Missile:
@@ -296,7 +300,8 @@ class Missile:
     def move(self):
         global user_score
         if 0 < self.x < display_width or 0 < self.y < display_height:
-            display.blit(pygame.transform.rotate(missile, self.angle), (self.x, self.y))
+            display.blit(pygame.transform.rotate(
+                missile, self.angle), (self.x, self.y))
             self.x += int((shot_speed * cos(radians(self.angle))))
             self.y -= int((shot_speed * sin(radians(self.angle))))
         else:
@@ -308,7 +313,7 @@ class Missile:
                 explosion = Explosion(self.x, self.y, asteroids_list[i].scale)
                 del asteroids_list[i]
                 user_score += 1
-                shots_list.remove(self) 
+                shots_list.remove(self)
                 break
         self.life -= 10
 
