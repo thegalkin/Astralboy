@@ -105,6 +105,7 @@ def run():
                          randint(-asteroids_spawn_areaSize, display_height + asteroids_spawn_areaSize))
                 asteroids_group.add(asteroid)
         for event in pygame.event.get():
+            print("w")
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
@@ -114,17 +115,22 @@ def run():
                     w_pressed = True
                 if event.key == pygame.K_s:
                     s_pressed = True
+                    print("w")
                 if event.key == pygame.K_d:
                     d_pressed = True
+                    print("w")
                 if event.key == pygame.K_SPACE:
                     missile = Missile()
+                    print("w")
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_w:
                     w_pressed = False
                 if event.key == pygame.K_s:
                     s_pressed = False
+                    print("w")
                 if event.key == pygame.K_d:
                     d_pressed = False
+                    print("w")
             if event.type == pygame.MOUSEBUTTONUP:
                 mouseX = pygame.mouse.get_pos()[0]
                 mouseY = pygame.mouse.get_pos()[1]
