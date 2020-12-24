@@ -110,6 +110,7 @@ def run():
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
+                    print("w")
                     w_pressed = True
                 if event.key == pygame.K_s:
                     s_pressed = True
